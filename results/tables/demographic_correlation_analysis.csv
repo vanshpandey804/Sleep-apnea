@@ -1,0 +1,10 @@
+Demographic Variable,Physiological Marker,Pearson r,Pearson p-value,Spearman rho
+age,baseline_resp_rate_bpm,0.168,0.3361,0.068
+age,baseline_hr_bpm,0.189,0.2774,0.185
+age,baseline_rr_sdnn_ms,-0.211,0.2248,-0.238
+BMI,baseline_resp_rate_bpm,0.206,0.2344,0.297
+BMI,baseline_hr_bpm,0.451,0.0065,0.56
+BMI,baseline_rr_sdnn_ms,-0.245,0.1553,-0.255
+AHI,baseline_resp_rate_bpm,0.327,0.0549,0.389
+AHI,baseline_hr_bpm,0.497,0.0024,0.54
+AHI,baseline_rr_sdnn_ms,-0.283,0.0997,-0.269

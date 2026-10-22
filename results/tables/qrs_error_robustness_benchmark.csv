@@ -1,0 +1,7 @@
+Scenario,Jitter Sigma,Dropout Rate,Random Forest ROC-AUC,Random Forest F1
+Clean Baseline,0.0,0.0,0.737,0.625
+Minor Jitter (10 ms),0.05,0.0,0.735,0.624
+Moderate Jitter (25 ms),0.15,0.0,0.727,0.619
+Severe Jitter (50 ms),0.3,0.0,0.714,0.603
+Missed Beats (10% Dropout),0.0,0.1,0.738,0.625
+Combined Noise (25ms + 10% Drop),0.15,0.1,0.725,0.614

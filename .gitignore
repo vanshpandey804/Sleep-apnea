@@ -1,0 +1,26 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+venv/
+ENV/
+
+# Large raw dataset archive (user download)
+data/apnea-ecg/
+data/test_records/
+data/curated_respiration/
+
+# Large binary ECG signals
+*.dat
+!data/ao1/a01.dat
+!data/ao1/a01r.dat
+!data/curated/a01/a01.dat
+!data/curated/b01/b01.dat
+!data/curated/c01/c01.dat
+
+# Temporary and system files
+.DS_Store
+._*

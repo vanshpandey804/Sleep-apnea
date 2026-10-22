@@ -15,6 +15,7 @@ fs = record.fs
 
 print("Sampling frequency:", fs)
 print("Total samples:", len(ecg))
+print("Total duration:", round(len(ecg) / fs / 3600, 2), "hours")
 
 
 # ============================================================
@@ -36,13 +37,10 @@ filtered_ecg = sosfiltfilt(sos, ecg)
 
 
 # ============================================================
-# 3. SELECT 20 SECONDS FOR TESTING
+# 3. USE ENTIRE ECG RECORD
 # ============================================================
 
-duration = 20
-samples = int(duration * fs)
-
-signal = filtered_ecg[:samples]
+signal = filtered_ecg
 
 time = np.arange(len(signal)) / fs
 
@@ -53,7 +51,6 @@ time = np.arange(len(signal)) / fs
 
 differentiated = np.diff(signal)
 
-# Keep the signal length unchanged
 differentiated = np.append(
     differentiated,
     differentiated[-1]
@@ -71,7 +68,6 @@ squared = differentiated ** 2
 # 6. MOVING-WINDOW INTEGRATION
 # ============================================================
 
-# 150 ms integration window
 window_seconds = 0.15
 window_samples = int(window_seconds * fs)
 
@@ -88,12 +84,10 @@ integrated = np.convolve(
 # 7. INITIAL PEAK ESTIMATION
 # ============================================================
 
-# Use first 2 seconds to initialize the detector
 initial_samples = int(2 * fs)
 
 initial_signal = integrated[:initial_samples]
 
-# Find local maxima in the initial region
 initial_peaks = []
 
 for i in range(1, len(initial_signal) - 1):
@@ -106,7 +100,6 @@ for i in range(1, len(initial_signal) - 1):
 
 initial_peaks = np.array(initial_peaks)
 
-# Safety check
 if len(initial_peaks) == 0:
     raise RuntimeError(
         "No initial peaks found. Check the ECG signal."
@@ -117,13 +110,10 @@ if len(initial_peaks) == 0:
 # 8. INITIAL SIGNAL AND NOISE LEVELS
 # ============================================================
 
-# Pan-Tompkins-style initialization
 signal_level = 0.25 * np.max(initial_peaks)
 
 noise_level = 0.5 * np.mean(initial_peaks)
 
-
-# Initial adaptive threshold
 threshold = noise_level + 0.25 * (
     signal_level - noise_level
 )
@@ -135,21 +125,16 @@ threshold = noise_level + 0.25 * (
 
 candidate_peaks = []
 
-# 250 ms refractory period
 refractory_period = int(0.25 * fs)
 
 last_peak = -refractory_period
 
-
-# Store threshold at every sample
 threshold_history = np.zeros(len(integrated))
 
 
 for i in range(1, len(integrated) - 1):
 
-    # Store current threshold
     threshold_history[i] = threshold
-
 
     # --------------------------------------------------------
     # Check for local maximum
@@ -163,9 +148,7 @@ for i in range(1, len(integrated) - 1):
     if not is_local_peak:
         continue
 
-
     peak_value = integrated[i]
-
 
     # --------------------------------------------------------
     # Peak above adaptive threshold
@@ -180,12 +163,10 @@ for i in range(1, len(integrated) - 1):
 
             last_peak = i
 
-            # Update signal estimate
             signal_level = (
                 0.875 * signal_level
                 + 0.125 * peak_value
             )
-
 
         else:
 
@@ -207,7 +188,6 @@ for i in range(1, len(integrated) - 1):
                         + 0.125 * peak_value
                     )
 
-
     # --------------------------------------------------------
     # Peak below threshold -> noise
     # --------------------------------------------------------
@@ -219,7 +199,6 @@ for i in range(1, len(integrated) - 1):
             + 0.125 * peak_value
         )
 
-
     # --------------------------------------------------------
     # Update adaptive threshold
     # --------------------------------------------------------
@@ -229,7 +208,6 @@ for i in range(1, len(integrated) - 1):
     )
 
 
-# Fill final threshold value
 threshold_history[-1] = threshold
 
 
@@ -237,11 +215,13 @@ threshold_history[-1] = threshold
 # 10. LOCATE ACTUAL R-PEAKS
 # ============================================================
 
-candidate_peaks = np.array(candidate_peaks, dtype=int)
+candidate_peaks = np.array(
+    candidate_peaks,
+    dtype=int
+)
 
 r_peaks = []
 
-# Search ±80 ms around QRS candidate
 search_window = int(0.08 * fs)
 
 
@@ -257,7 +237,6 @@ for candidate in candidate_peaks:
         candidate + search_window + 1
     )
 
-    # Find maximum ECG amplitude
     local_peak = start + np.argmax(
         signal[start:end]
     )
@@ -265,29 +244,44 @@ for candidate in candidate_peaks:
     r_peaks.append(local_peak)
 
 
-r_peaks = np.array(r_peaks, dtype=int)
+r_peaks = np.array(
+    r_peaks,
+    dtype=int
+)
 
-# Remove duplicate positions
 r_peaks = np.unique(r_peaks)
 
 r_peak_times = r_peaks / fs
 
 
 # ============================================================
-# 11. PRINT DETECTION RESULTS
+# 11. SAVE DETECTED R-PEAKS
 # ============================================================
 
+output_file = "a01_detector2_adaptive_r_peaks.npy"
+
+np.save(
+    output_file,
+    r_peaks
+)
+
 print("\n----------------------------------------")
-print("QRS DETECTION RESULTS")
+print("DETECTOR 2 RESULTS")
 print("----------------------------------------")
 
-print("Number of detected R-peaks:",
-      len(r_peaks))
-
-print("\nR-peak times (seconds):")
+print(
+    "Number of QRS candidates:",
+    len(candidate_peaks)
+)
 
 print(
-    np.round(r_peak_times, 3)
+    "Number of detected R-peaks:",
+    len(r_peaks)
+)
+
+print(
+    "R-peaks saved as:",
+    output_file
 )
 
 
@@ -301,28 +295,76 @@ if len(r_peaks) > 1:
 
     heart_rate = 60 / rr_intervals
 
-    print("\nRR intervals (seconds):")
+    print("\nRR INTERVAL SUMMARY")
+    print("----------------------------------------")
 
     print(
-        np.round(rr_intervals, 3)
-    )
-
-    print("\nInstantaneous heart rate (BPM):")
-
-    print(
-        np.round(heart_rate, 2)
+        "Mean RR:",
+        round(np.mean(rr_intervals), 3),
+        "seconds"
     )
 
     print(
-        "\nAverage heart rate:",
+        "Median RR:",
+        round(np.median(rr_intervals), 3),
+        "seconds"
+    )
+
+    print(
+        "Mean heart rate:",
         round(np.mean(heart_rate), 2),
         "BPM"
     )
 
+    print(
+        "Median heart rate:",
+        round(np.median(heart_rate), 2),
+        "BPM"
+    )
+
+    print("\nFirst 10 R-peak times:")
+
+    print(
+        np.round(
+            r_peak_times[:10],
+            3
+        )
+    )
+
+    print("\nLast 10 R-peak times:")
+
+    print(
+        np.round(
+            r_peak_times[-10:],
+            3
+        )
+    )
+
 
 # ============================================================
-# 13. PLOT RESULTS
+# 13. PLOT ONLY FIRST 20 SECONDS
 # ============================================================
+
+plot_duration = 20
+
+plot_samples = int(
+    plot_duration * fs
+)
+
+plot_signal = signal[:plot_samples]
+
+plot_time = np.arange(
+    len(plot_signal)
+) / fs
+
+plot_r_peaks = r_peaks[
+    r_peaks < plot_samples
+]
+
+plot_candidate_peaks = candidate_peaks[
+    candidate_peaks < plot_samples
+]
+
 
 plt.figure(figsize=(16, 10))
 
@@ -334,14 +376,14 @@ plt.figure(figsize=(16, 10))
 plt.subplot(3, 1, 1)
 
 plt.plot(
-    time,
-    signal,
+    plot_time,
+    plot_signal,
     label="Filtered ECG"
 )
 
 plt.scatter(
-    r_peak_times,
-    signal[r_peaks],
+    plot_r_peaks / fs,
+    signal[plot_r_peaks],
     color="red",
     s=35,
     label="Detected R-peaks",
@@ -352,7 +394,7 @@ plt.xlabel("Time (seconds)")
 plt.ylabel("Amplitude")
 
 plt.title(
-    "Adaptive QRS Detection - Filtered ECG"
+    "Detector 2 - Adaptive QRS Detection"
 )
 
 plt.legend()
@@ -366,8 +408,8 @@ plt.grid()
 plt.subplot(3, 1, 2)
 
 plt.plot(
-    time,
-    squared,
+    plot_time,
+    squared[:plot_samples],
     label="Squared derivative"
 )
 
@@ -389,14 +431,14 @@ plt.grid()
 plt.subplot(3, 1, 3)
 
 plt.plot(
-    time,
-    integrated,
+    plot_time,
+    integrated[:plot_samples],
     label="Integrated signal"
 )
 
 plt.scatter(
-    candidate_peaks / fs,
-    integrated[candidate_peaks],
+    plot_candidate_peaks / fs,
+    integrated[plot_candidate_peaks],
     color="red",
     s=35,
     label="QRS candidates",
@@ -404,8 +446,8 @@ plt.scatter(
 )
 
 plt.plot(
-    time,
-    threshold_history,
+    plot_time,
+    threshold_history[:plot_samples],
     linestyle="--",
     label="Adaptive threshold"
 )

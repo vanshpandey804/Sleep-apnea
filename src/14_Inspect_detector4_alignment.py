@@ -9,7 +9,7 @@ record = wfdb.rdrecord("data/ao1/a01")
 ecg = record.p_signal[:, 0].astype(float)
 fs = float(record.fs)
 
-pairs = np.load("a01_detector4_matched_pairs.npy")
+pairs = np.load("results/detector_benchmarks/a01_detector4_matched_pairs.npy" if Path("results/detector_benchmarks/a01_detector4_matched_pairs.npy").exists() else "a01_detector4_matched_pairs.npy")
 detected = pairs[:, 0].astype(int)
 reference = pairs[:, 1].astype(int)
 

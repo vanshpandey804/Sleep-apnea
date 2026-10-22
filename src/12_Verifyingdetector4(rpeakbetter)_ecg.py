@@ -7,7 +7,7 @@ import numpy as np
 # ============================================================
 
 record_path = "data/ao1/a01"
-detected_path = "a01_detector4_r_peaks.npy"
+detected_path = "results/detector_benchmarks/a01_detector4_r_peaks.npy" if Path("results/detector_benchmarks/a01_detector4_r_peaks.npy").exists() else "a01_detector4_r_peaks.npy"
 
 try:
     detected = np.load(detected_path).astype(int)
@@ -108,7 +108,7 @@ timing_errors_ms = timing_errors_samples / fs * 1000
 matched_pairs = np.asarray(matched_pairs, dtype=int).reshape(-1, 3)
 
 np.save(
-    "a01_detector4_matched_pairs.npy",
+    "results/detector_benchmarks/a01_detector4_matched_pairs.npy",
     matched_pairs
 )
 

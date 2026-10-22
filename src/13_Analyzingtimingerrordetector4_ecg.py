@@ -9,7 +9,7 @@ from scipy.signal import butter, sosfiltfilt
 # ============================================================
 
 record_path = "data/ao1/a01"
-pairs_path = "a01_detector4_matched_pairs.npy"
+pairs_path = "results/detector_benchmarks/a01_detector4_matched_pairs.npy" if Path("results/detector_benchmarks/a01_detector4_matched_pairs.npy").exists() else "a01_detector4_matched_pairs.npy"
 
 record = wfdb.rdrecord(record_path)
 ecg = record.p_signal[:, 0].astype(float)
@@ -67,7 +67,7 @@ error_data = np.column_stack([
 ])
 
 np.savetxt(
-    "a01_detector4_timing_errors.csv",
+    "results/detector_benchmarks/a01_detector4_timing_errors.csv",
     error_data,
     delimiter=",",
     header="reference_time_s,detected_time_s,error_samples,error_ms",

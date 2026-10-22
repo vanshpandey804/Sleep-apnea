@@ -14,7 +14,7 @@ from scipy.interpolate import PchipInterpolator
 ROOT = Path(__file__).resolve().parent.parent
 
 RECORD_PATH = ROOT / "data" / "ao1" / "a01"
-PEAKS_PATH = ROOT / "a01_detector4_matched_pairs.npy"
+PEAKS_PATH = ROOT / "results" / "detector_benchmarks" / "a01_detector4_matched_pairs.npy" if (ROOT / "results" / "detector_benchmarks" / "a01_detector4_matched_pairs.npy").exists() else ROOT / "a01_detector4_matched_pairs.npy"
 
 OUTPUT_DIR = ROOT / "results" / "tables"
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)

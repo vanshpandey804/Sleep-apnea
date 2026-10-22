@@ -17,7 +17,7 @@ fs = float(record.fs)
 annotations = wfdb.rdann(record_path, "qrs")
 reference = np.asarray(annotations.sample, dtype=int)
 
-pairs = np.load("a01_detector4_matched_pairs.npy")
+pairs = np.load("results/detector_benchmarks/a01_detector4_matched_pairs.npy" if Path("results/detector_benchmarks/a01_detector4_matched_pairs.npy").exists() else "a01_detector4_matched_pairs.npy")
 
 # Column 0: detected sample
 # Column 1: corresponding reference sample

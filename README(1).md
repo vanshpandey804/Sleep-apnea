@@ -383,19 +383,19 @@ The coefficients 0.875 and 0.125, together with the threshold fraction 0.25, fol
 
 #### 3.2.2 Initialization
 
-The initial signal and noise levels are estimated from local maxima in the first two seconds of the integrated signal. The implementation initializes the estimates as:
+The initial signal and noise levels are estimated from local maxima in the first two seconds of the integrated signal. The implementation initializes these estimates as:
 
 $$
-SPKI = 0.25 \times \max(PEAKS_{\mathrm{initial}})
+SPKI = 0.25 \times \max(PEAKS_{\text{initial}})
 $$
 
 $$
-NPKI = 0.5 \times \operatorname{mean}(PEAKS_{\mathrm{initial}})
+NPKI = 0.5 \times \text{mean}(PEAKS_{\text{initial}})
 $$
 
-The initial threshold is then calculated using the adaptive-threshold equation above.
+The initial threshold is then calculated using the adaptive-threshold equation introduced above.
 
-These initialization multipliers are implementation choices. They should not be confused with the subsequent adaptive update equations.
+These initialization multipliers are implementation-specific choices, not universal constants of the Pan–Tompkins algorithm. They are distinct from the adaptive update equations applied as subsequent peaks are classified.
 
 #### 3.2.3 Refractory Period
 
@@ -469,11 +469,11 @@ Rather than initializing the signal and noise levels using fixed fractions of th
 The initialization is:
 
 $$
-NPKI = \operatorname{median}(PEAKS_{\mathrm{initial}})
+NPKI = \text{median}(PEAKS_{\text{initial}})
 $$
 
 $$
-SPKI = P_{90}(PEAKS_{\mathrm{initial}})
+SPKI = P_{90}(PEAKS_{\text{initial}})
 $$
 
 where `P90` is the 90th percentile of the initial peak values.
@@ -863,13 +863,12 @@ The compilation environment was provided by MinGW/MSYS2, which supplied the Wind
 A direct comparison of the annotation sample indices would have been invalid because the original ECG was sampled at 100 Hz, whereas `sqrs125` internally processes recordings at 125 Hz. The fresh annotation indices were therefore converted to the original time base:
 
 $$
-n_{100}=\operatorname{round}\left(n_{125}\frac{100}{125}\right)
+n_{100} = \text{round}\left(n_{125} \times \frac{100}{125}\right)
 $$
 
 where \(n_{125}\) denotes a sample index from the fresh annotations and \(n_{100}\) denotes the corresponding index on the original 100 Hz time base.
 
 After conversion, the two annotation sets were compared using one-to-one beat matching with a tolerance of 50 ms, corresponding to five samples at 100 Hz. This allowed detections to be classified as matches, unmatched fresh detections, or unmatched reference annotations.
-
 **Table 4.7.4.1: Comparison of freshly generated and supplied SQRS125 annotations**
 
 | Measurement | Result |
